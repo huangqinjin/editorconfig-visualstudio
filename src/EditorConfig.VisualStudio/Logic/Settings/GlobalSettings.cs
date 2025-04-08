@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using EditorConfig.Core;
 using EditorConfig.VisualStudio.Helpers;
+using System.Threading.Tasks;
 
 namespace EditorConfig.VisualStudio.Logic.Settings
 {
@@ -16,12 +17,16 @@ namespace EditorConfig.VisualStudio.Logic.Settings
         private readonly string[] _globalPropKeys = new[] { "TabSize", "IndentSize", "InsertTabs" };
         private readonly FileConfiguration _settings;
         private readonly Properties _editorProps;
+        private readonly int _focusDelay;
 
         internal GlobalSettings(IWpfTextView view, DTE app, FileConfiguration settings)
         {
             _view = view;
             _app = app;
             _settings = settings;
+
+            if (!int.TryParse(Environment.GetEnvironmentVariable("EDITORCONFIG_VS_FOCUS_DELAY"), out _focusDelay))
+                _focusDelay = 500;
 
             try
             {
@@ -47,9 +52,24 @@ namespace EditorConfig.VisualStudio.Logic.Settings
         /// <summary>
         /// Updates the global settings when the local editor receives focus
         /// </summary>
-        private void GotAggregateFocus(object sender, EventArgs e)
+        private async void GotAggregateFocus(object sender, EventArgs e)
         {
             if (_settings == null) return;
+
+            await Task.Delay(_focusDelay);
+            if (!_view.HasAggregateFocus)
+            {
+                // The case is
+                // 1. Current view got focus;
+                // 2. Click Tools, current view lost focus;
+                // 3. Click Options, current view would get focus but lost is a very short time;
+                // 4. Options page appeared to get modified settings internally even it displays restored settings on UI;
+                // 5. Click Cancel, the global settings get modified;
+                OutputWindowHelper.WriteLine(String.Format("'{0}' got focus but lost in {1} ms, skip global settings",
+                    _settings.FileName, _focusDelay));
+                return;
+            }
+
             Save();
             Apply();
         }
