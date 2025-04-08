@@ -16,9 +16,9 @@ namespace EditorConfig.VisualStudio.Logic.Settings
     {
         private readonly IWpfTextView _view;
         private readonly ITextDocument _doc;
-        private readonly FileConfiguration _settings;
+        private FileConfiguration _settings;
         private readonly SettingsManager _settingsManager;
-        private readonly GlobalSettings _globalSettings;
+        private GlobalSettings _globalSettings;
         private readonly DTE _app;
 
         public TextViewMonitor(IWpfTextView view, ITextDocument document, DTE app, ErrorListProvider messageList)
@@ -51,10 +51,29 @@ namespace EditorConfig.VisualStudio.Logic.Settings
         private void FileActionOccurred(object sender, TextDocumentFileActionEventArgs e)
         {
             if ((e.FileActionType & FileActionTypes.DocumentRenamed) != 0)
+            {
+                _globalSettings?.Dispose();
+                _globalSettings = null;
                 _settingsManager.LoadSettings(e.FilePath);
+                _settings = _settingsManager.Settings;
+                if (_settings != null)
+                {
+                    _globalSettings = new GlobalSettings(_view, _app, _settings);
+                    if (_view.HasAggregateFocus)
+                    {
+                        new InitialCleanup(_doc, _app, _settings).Execute();
+                        _globalSettings.Apply();
+                    }
+                    else
+                    {
+                        _view.GotAggregateFocus -= ViewOnGotAggregateFocus;
+                        _view.GotAggregateFocus += ViewOnGotAggregateFocus;
+                    }
+                }
+            }
 
-            if (_settings != null && _view.HasAggregateFocus)
-                _globalSettings.Apply();
+            //if (_settings != null && _view.HasAggregateFocus)
+            //    _globalSettings.Apply();
         }
 
         private void Closed(object sender, EventArgs e)
