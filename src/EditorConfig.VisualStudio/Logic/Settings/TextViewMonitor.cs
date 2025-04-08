@@ -65,7 +65,7 @@ namespace EditorConfig.VisualStudio.Logic.Settings
         public void Dispose()
         {
             _settingsManager.Dispose();
-            _globalSettings.Dispose();
+            _globalSettings?.Dispose();
             _doc.FileActionOccurred -= FileActionOccurred;
             _view.GotAggregateFocus -= ViewOnGotAggregateFocus;
             _view.Closed -= Closed;

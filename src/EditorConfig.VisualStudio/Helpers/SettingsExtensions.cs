@@ -25,6 +25,8 @@ namespace EditorConfig.VisualStudio.Helpers
                 }
             }
             fileConfiguration = parser.Parse(path, configFiles);
+            if ((fileConfiguration?.Properties.Count ?? 0) == 0)
+                fileConfiguration = null;
             return fileConfiguration != null;
         }
     }

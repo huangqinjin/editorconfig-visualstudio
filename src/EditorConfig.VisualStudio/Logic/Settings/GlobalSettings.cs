@@ -27,15 +27,21 @@ namespace EditorConfig.VisualStudio.Logic.Settings
             {
                 var type = _view.TextDataModel.ContentType.TypeName;
                 _editorProps = _app.Properties["TextEditor", type];
+                
+                OutputWindowHelper.WriteLine(String.Format("'{0}' is of type {1}",
+                    _settings.FileName, type));
+            
+                if (_editorProps != null)
+                {
+                    view.GotAggregateFocus += GotAggregateFocus;
+                    view.LostAggregateFocus += LostAggregateFocus;
+                }
             }
             catch
             {
                 // If the above code didn't work, this particular content type
                 // didn't need its settings changed anyhow
             }
-
-            view.GotAggregateFocus += GotAggregateFocus;
-            view.LostAggregateFocus += LostAggregateFocus;
         }
 
         /// <summary>
@@ -89,6 +95,9 @@ namespace EditorConfig.VisualStudio.Logic.Settings
             _savedGlobalProps.Clear();
             foreach (var key in _globalPropKeys)
                 _savedGlobalProps.Add(key, _editorProps.Item(key).Value);
+
+            OutputWindowHelper.WriteLine(String.Format("'{0}' saved global settings {1}",
+                _settings.FileName, string.Join("", _savedGlobalProps)));
         }
 
         /// <summary>
@@ -98,6 +107,10 @@ namespace EditorConfig.VisualStudio.Logic.Settings
         internal void Restore()
         {
             if (_editorProps == null) return;
+            if (_savedGlobalProps.Count == 0) return;
+
+            OutputWindowHelper.WriteLine(String.Format("'{0}' restored global settings {1}",
+                _settings.FileName, string.Join("", _savedGlobalProps)));
 
             foreach (var key in _savedGlobalProps.Keys)
                 _editorProps.Item(key).Value = _savedGlobalProps[key];
