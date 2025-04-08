@@ -1,6 +1,7 @@
 ﻿using EditorConfig.Core;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -13,10 +14,18 @@ namespace EditorConfig.VisualStudio.Helpers
             fileConfiguration = null;
             if (string.IsNullOrEmpty(path)) return false;
             var parser = new EditorConfigParser();
-            var configurations = parser.Parse(path);
-            if (!configurations.Any()) return false;
-            fileConfiguration = configurations.First();
-            return true;
+            var configFiles = parser.GetConfigurationFilesTillRoot(path);
+            if (configFiles.Count == 0 || !configFiles.First().IsRoot)
+            {
+                var root = new DirectoryInfo(path).Root.FullName;
+                var configFile = Path.Combine(root, parser.ConfigFileName);
+                if (File.Exists(configFile))
+                {
+                    configFiles.Insert(0, EditorConfigFile.Parse(configFile));
+                }
+            }
+            fileConfiguration = parser.Parse(path, configFiles);
+            return fileConfiguration != null;
         }
     }
 

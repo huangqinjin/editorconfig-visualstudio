@@ -2,7 +2,7 @@ FRAMEWORK: >= NET45
 NUGET
   remote: http://api.nuget.org/v3/index.json
   specs:
-    editorconfig (0.12.1)
+    editorconfig (0.15)
     Microsoft.VisualStudio.SDK.VsixSuppression (14.1.15) - copy_local: false
     Microsoft.VSSDK.BuildTools (14.1.24720) - copy_local: false
     VSSDK.ComponentModelHost (11.0.4)

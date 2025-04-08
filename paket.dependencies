@@ -1,7 +1,7 @@
 source https://api.nuget.org/v3/index.json
 framework >= net45
 
-nuget editorconfig 0.12.1
+nuget editorconfig 0.15.0
 nuget Microsoft.VisualStudio.SDK.VsixSuppression 14.1.15 copy_local: false
 nuget Microsoft.VSSDK.BuildTools 14.1.24720 copy_local: false
 nuget VSSDK.ComponentModelHost.11
